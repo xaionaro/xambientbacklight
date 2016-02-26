@@ -12,7 +12,7 @@ DEBUGCFLAGS ?= -pipe -Wall -ggdb3 -export-dynamic -Wno-error=unused-variable -O0
 
 CARCHFLAGS ?= -march=native
 
-LIBS := -lX11
+LIBS := -lX11 -lXext -lXdamage
 LDSECFLAGS ?= -Xlinker -zrelro
 LDFLAGS += $(LDSECFLAGS) -pthread
 INC := $(INC)
