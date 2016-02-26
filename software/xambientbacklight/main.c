@@ -15,14 +15,84 @@
 #define TILE_SIZE 64
 #define TILES_X_COUNT 5
 #define TILES_Y_COUNT 3
+#define X_STEP 4
+#define Y_STEP 4
 
+struct out {
+	char edge_id;
+	char led_id;
+	char r;
+	char g;
+	char b;
+};
 
-void get_tile ( int edge_id, int led_id, Display *d, XImage *image, int x, int y )
+void get_pixel ( int x, int y, Display *d, XImage *image, XColor *c )
 {
+	unsigned long rgb = XGetPixel ( image, x, y );
+	c->red   =  rgb >> 16;
+	c->green = (rgb >>  8) & 0xff;
+	c->blue  =  rgb        & 0xff;
+}
+
+void get_tile ( char edge_id, char led_id, Display *d, XImage *image, int center_x, int center_y )
+{
+	float r=0, g=0, b=0;
+	int x, y, pixel_count = 0;
 	XColor c;
-	c.pixel = XGetPixel ( image, x, y );
-	XQueryColor ( d, DefaultColormap ( d, DefaultScreen ( d ) ), &c );
-	printf ( "%i\t%i\t%i\t%i\t%i\t%i\t%i\n", edge_id, led_id, x, y, c.red/256, c.green/256, c.blue/256 );
+	x = center_x - TILE_SIZE / 2;
+	y = center_y - TILE_SIZE / 2;
+
+	while ( x < center_x + TILE_SIZE / 2 ) {
+		get_pixel ( x, y, d, image, &c );
+		r += ( c.red   );
+		g += ( c.green );
+		b += ( c.blue  );
+		pixel_count ++;
+		x += X_STEP;
+	}
+
+	while ( y < center_y + TILE_SIZE / 2 ) {
+		get_pixel ( x, y, d, image, &c );
+		r += ( c.red   );
+		g += ( c.green );
+		b += ( c.blue  );
+		pixel_count ++;
+		y += Y_STEP;
+	}
+
+	while ( x > center_x - TILE_SIZE / 2 ) {
+		get_pixel ( x, y, d, image, &c );
+		r += ( c.red   );
+		g += ( c.green );
+		b += ( c.blue  );
+		pixel_count ++;
+		x -= X_STEP;
+	}
+
+	while ( y > center_y - TILE_SIZE / 2 ) {
+		get_pixel ( x, y, d, image, &c );
+		r += ( c.red   );
+		g += ( c.green );
+		b += ( c.blue  );
+		pixel_count ++;
+		y -= Y_STEP;
+	}
+
+	r /= pixel_count;
+	g /= pixel_count;
+	b /= pixel_count;
+
+	//printf ( "%i\t%i\t%i\t%i\t%i\t%i\t%i\n", edge_id, led_id, x, y, (int)r, (int)g, (int)b );
+
+	struct out s;
+
+	s.edge_id = edge_id;
+	s.led_id  = led_id;
+	s.r       = r;
+	s.g       = g;
+	s.b       = b;
+
+	assert (write(1, &s, sizeof(s)) == sizeof(s));
 	return;
 }
 
