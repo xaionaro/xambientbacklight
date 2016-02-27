@@ -36,6 +36,10 @@
 #include "stm32f0xx_it.h"
 
 /* USER CODE BEGIN 0 */
+#define LEDS 12
+extern GPIO_TypeDef *ledGPIO[];
+extern uint16_t      ledPIN[];
+extern uint8_t       led[];
 
 /* USER CODE END 0 */
 
@@ -52,10 +56,24 @@ void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
+  static uint8_t tickid = 0;
+
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
+
+  int ledid = 0;
+  while (ledid < LEDS*3) {
+    if (led[ledid] > tickid) {
+      ledGPIO[ledid]->BSRR = ledPIN[ledid];
+    } else {
+      ledGPIO[ledid]->BSRR = ledPIN[ledid] << 16;
+    }
+    ledid++;
+  }
+
+  tickid++;
 
   /* USER CODE END SysTick_IRQn 1 */
 }

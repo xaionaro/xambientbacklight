@@ -1,19 +1,19 @@
 /*
     xambientbacklight - utility to scan Xorg's screen a report to ambient
       backlight controller
-    
+
     Copyright (C) 2016  Dmitry Yu Okunev <dyokunev@ut.mephi.ru> 0x8E30679C
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -38,7 +38,8 @@
 #define X_STEP 4
 #define Y_STEP 4
 
-struct out {
+struct __attribute__((__packed__)) out {
+	char preamble;
 	char edge_id;
 	char led_id;
 	char r;
@@ -50,13 +51,13 @@ void get_pixel ( int x, int y, Display *d, XImage *image, XColor *c )
 {
 	unsigned long rgb = XGetPixel ( image, x, y );
 	c->red   =  rgb >> 16;
-	c->green = (rgb >>  8) & 0xff;
+	c->green = ( rgb >>  8 ) & 0xff;
 	c->blue  =  rgb        & 0xff;
 }
 
 void get_tile ( char edge_id, char led_id, Display *d, XImage *image, int center_x, int center_y )
 {
-	float r=0, g=0, b=0;
+	float r = 0, g = 0, b = 0;
 	int x, y, pixel_count = 0;
 	XColor c;
 	x = center_x - TILE_SIZE / 2;
@@ -101,18 +102,22 @@ void get_tile ( char edge_id, char led_id, Display *d, XImage *image, int center
 	r /= pixel_count;
 	g /= pixel_count;
 	b /= pixel_count;
-
 	//printf ( "%i\t%i\t%i\t%i\t%i\t%i\t%i\n", edge_id, led_id, x, y, (int)r, (int)g, (int)b );
-
 	struct out s;
 
-	s.edge_id = edge_id;
-	s.led_id  = led_id;
-	s.r       = r;
-	s.g       = g;
-	s.b       = b;
+	if ( r > 254 ) r = 254;
 
-	assert (write(1, &s, sizeof(s)) == sizeof(s));
+	if ( g > 254 ) g = 254;
+
+	if ( b > 254 ) b = 254;
+
+	s.preamble = 0;
+	s.edge_id  = edge_id + 1;
+	s.led_id   = led_id + 1;
+	s.r	   = r;
+	s.g	   = g;
+	s.b	   = b;
+	assert ( write ( 1, &s, sizeof ( s ) ) == sizeof ( s ) );
 	return;
 }
 

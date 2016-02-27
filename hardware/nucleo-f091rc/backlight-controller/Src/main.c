@@ -30,11 +30,6 @@
   *
   ******************************************************************************
   */
-/*
-
- Author: Dmitry Yu Okunev <dyokunev@ut.mephi.ru>, 2016
-
- */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
@@ -49,6 +44,50 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+
+#define LEDS 12
+#define TILES_X_COUNT 5
+#define TILES_Y_COUNT 3
+
+GPIO_TypeDef *ledGPIO[] = {
+				E0_L0_R_E2_L2_R_GPIO_Port,	E0_L0_G_E2_L2_G_GPIO_Port,	E0_L0_B_E2_L2_B_GPIO_Port,
+				E0_L1_R_GPIO_Port,		E0_L1_G_GPIO_Port,		E0_L1_B_GPIO_Port,
+				E0_L2_R_GPIO_Port,		E0_L2_G_GPIO_Port,		E0_L2_B_GPIO_Port,
+				E0_L3_R_GPIO_Port,		E0_L3_G_GPIO_Port,		E0_L3_B_GPIO_Port,
+				E0_L4_R_E3_L0_R_GPIO_Port,	E0_L4_G_E3_L0_G_GPIO_Port,	E0_L4_B_E3_L0_B_GPIO_Port,
+				E3_L1_R_GPIO_Port,		E3_L1_G_GPIO_Port,		E3_L1_B_GPIO_Port,
+				E3_L2_R_E1_L0_R_GPIO_Port,	E3_L2_G_E1_L0_G_GPIO_Port,	E3_L2_B_E1_L0_B_GPIO_Port,
+				E1_L1_R_INT_G_GPIO_Port,	E1_L1_G_GPIO_Port,		E1_L1_B_GPIO_Port,
+				E1_L2_R_GPIO_Port,		E1_L2_G_GPIO_Port,		E1_L2_B_GPIO_Port,
+				E1_L3_R_GPIO_Port,		E1_L3_G_GPIO_Port,		E1_L3_B_GPIO_Port,
+				E1_L4_R_E2_L0_R_GPIO_Port,	E1_L4_G_E2_L0_G_GPIO_Port,	E1_L4_B_E2_L0_B_GPIO_Port,
+				E2_L1_R_GPIO_Port,		E2_L1_G_GPIO_Port,		E2_L1_B_GPIO_Port,
+			};
+uint16_t      ledPIN[]  = {
+				E0_L0_R_E2_L2_R_Pin,		E0_L0_G_E2_L2_G_Pin,		E0_L0_B_E2_L2_B_Pin,
+				E0_L1_R_Pin,			E0_L1_G_Pin,			E0_L1_B_Pin,
+				E0_L2_R_Pin,			E0_L2_G_Pin,			E0_L2_B_Pin,
+				E0_L3_R_Pin,			E0_L3_G_Pin,			E0_L3_B_Pin,
+				E0_L4_R_E3_L0_R_Pin,		E0_L4_G_E3_L0_G_Pin,		E0_L4_B_E3_L0_B_Pin,
+				E3_L1_R_Pin,			E3_L1_G_Pin,			E3_L1_B_Pin,
+				E3_L2_R_E1_L0_R_Pin,		E3_L2_G_E1_L0_G_Pin,		E3_L2_B_E1_L0_B_Pin,
+				E1_L1_R_INT_G_Pin,		E1_L1_G_Pin,			E1_L1_B_Pin,
+				E1_L2_R_Pin,			E1_L2_G_Pin,			E1_L2_B_Pin,
+				E1_L3_R_Pin,			E1_L3_G_Pin,			E1_L3_B_Pin,
+				E1_L4_R_E2_L0_R_Pin,		E1_L4_G_E2_L0_G_Pin,		E1_L4_B_E2_L0_B_Pin,
+				E2_L1_R_Pin,			E2_L1_G_Pin,			E2_L1_B_Pin,
+			};
+uint8_t       led[LEDS*3] = {0};
+
+
+struct __attribute__((__packed__)) in {
+	char preamble;
+	char edge_id;
+	char led_id;
+	char r;
+	char g;
+	char b;
+};
 
 /* USER CODE END PV */
 
@@ -95,8 +134,43 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    uint8_t uart_buf[1];
+    struct in s;
+    
+    while (1) // Waiting for a preamble
+      if (HAL_UART_Receive(&huart2, (uint8_t *)&s, 1, 0) == HAL_OK) {
+        if (!*uart_buf) break; // Got the preamble
+      }
+    
+    if (HAL_UART_Receive(&huart2, ((uint8_t *)&s)+1, sizeof(struct in), ~0) == HAL_OK) { // Infinite wait for a frame
+      // Correcting values (parsing)
+      s.edge_id--;
+      s.led_id--;
+      if (s.r != 255) s.r--;
+      if (s.g != 255) s.g--;
+      if (s.b != 255) s.b--;
+      uint8_t ledid = 0;
+      switch(s.edge_id) {
+        case 0: // top
+          ledid = s.led_id;
+          break;
+        case 3: // right
+          ledid = (TILES_X_COUNT-1) + s.led_id;
+          break;
+        case 1: // bottom
+          ledid = (TILES_X_COUNT-1) + TILES_Y_COUNT + s.led_id;
+          break;
+        case 2: // left
+          ledid = (TILES_X_COUNT-1) + TILES_Y_COUNT + TILES_X_COUNT + s.led_id;
+          break;
+      }
+      
+      // Considering received information
+      led[ledid*3 +0] = s.r;
+      led[ledid*3 +1] = s.g;
+      led[ledid*3 +2] = s.b;
+    }
   /* USER CODE END WHILE */
-
   /* USER CODE BEGIN 3 */
 
   }
@@ -113,14 +187,17 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInit;
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
-  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
+  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV2;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
@@ -189,43 +266,69 @@ void MX_GPIO_Init(void)
   __GPIOC_CLK_ENABLE();
   __GPIOF_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
+  __GPIOB_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, E0_L4_B_E3_L0_B_Pin|E0_L4_R_E3_L0_R_Pin|E0_L3_B_Pin|E0_L3_R_Pin 
+                          |E0_L4_G_E3_L0_G_Pin|E3_L2_R_E1_L0_R_Pin|E3_L1_B_Pin|E1_L3_B_Pin 
+                          |E3_L1_G_Pin|E3_L1_R_Pin|E0_L0_G_E2_L2_G_Pin|E0_L0_R_E2_L2_R_Pin 
+                          |E0_L0_B_E2_L2_B_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, E0_L2_G_Pin|E0_L2_R_Pin|E0_L2_B_Pin|E1_L1_R_INT_G_Pin 
+                          |E1_L2_G_Pin|E1_L2_B_Pin|E2_L1_G_Pin|E1_L4_R_E2_L0_R_Pin 
+                          |E1_L1_B_Pin|E1_L1_G_Pin|E0_L1_R_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC10 PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, E0_L3_G_Pin|E1_L4_B_E2_L0_B_Pin|E1_L4_G_E2_L0_G_Pin|E2_L1_B_Pin 
+                          |E1_L3_G_Pin|E1_L2_R_Pin|E2_L1_R_Pin|E1_L3_R_Pin 
+                          |E0_L1_B_Pin|E3_L2_G_E1_L0_G_Pin|E3_L2_B_E1_L0_B_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(E0_L1_G_GPIO_Port, E0_L1_G_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : E0_L4_B_E3_L0_B_Pin E0_L4_R_E3_L0_R_Pin E0_L3_B_Pin E0_L3_R_Pin 
+                           E0_L4_G_E3_L0_G_Pin E3_L2_R_E1_L0_R_Pin E3_L1_B_Pin E1_L3_B_Pin 
+                           E3_L1_G_Pin E3_L1_R_Pin E0_L0_G_E2_L2_G_Pin E0_L0_R_E2_L2_R_Pin 
+                           E0_L0_B_E2_L2_B_Pin */
+  GPIO_InitStruct.Pin = E0_L4_B_E3_L0_B_Pin|E0_L4_R_E3_L0_R_Pin|E0_L3_B_Pin|E0_L3_R_Pin 
+                          |E0_L4_G_E3_L0_G_Pin|E3_L2_R_E1_L0_R_Pin|E3_L1_B_Pin|E1_L3_B_Pin 
+                          |E3_L1_G_Pin|E3_L1_R_Pin|E0_L0_G_E2_L2_G_Pin|E0_L0_R_E2_L2_R_Pin 
+                          |E0_L0_B_E2_L2_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PD2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  /*Configure GPIO pins : E0_L2_G_Pin E0_L2_R_Pin E0_L2_B_Pin E1_L1_R_INT_G_Pin 
+                           E1_L2_G_Pin E1_L2_B_Pin E2_L1_G_Pin E1_L4_R_E2_L0_R_Pin 
+                           E1_L1_B_Pin E1_L1_G_Pin E0_L1_R_Pin */
+  GPIO_InitStruct.Pin = E0_L2_G_Pin|E0_L2_R_Pin|E0_L2_B_Pin|E1_L1_R_INT_G_Pin 
+                          |E1_L2_G_Pin|E1_L2_B_Pin|E2_L1_G_Pin|E1_L4_R_E2_L0_R_Pin 
+                          |E1_L1_B_Pin|E1_L1_G_Pin|E0_L1_R_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  /*Configure GPIO pins : E0_L3_G_Pin E1_L4_B_E2_L0_B_Pin E1_L4_G_E2_L0_G_Pin E2_L1_B_Pin 
+                           E1_L3_G_Pin E1_L2_R_Pin E2_L1_R_Pin E1_L3_R_Pin 
+                           E0_L1_B_Pin E3_L2_G_E1_L0_G_Pin E3_L2_B_E1_L0_B_Pin */
+  GPIO_InitStruct.Pin = E0_L3_G_Pin|E1_L4_B_E2_L0_B_Pin|E1_L4_G_E2_L0_G_Pin|E2_L1_B_Pin 
+                          |E1_L3_G_Pin|E1_L2_R_Pin|E2_L1_R_Pin|E1_L3_R_Pin 
+                          |E0_L1_B_Pin|E3_L2_G_E1_L0_G_Pin|E3_L2_B_E1_L0_B_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+  /*Configure GPIO pin : E0_L1_G_Pin */
+  GPIO_InitStruct.Pin = E0_L1_G_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(E0_L1_G_GPIO_Port, &GPIO_InitStruct);
 
 }
 
