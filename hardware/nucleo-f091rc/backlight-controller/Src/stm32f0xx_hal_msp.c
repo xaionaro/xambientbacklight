@@ -59,10 +59,10 @@ void HAL_MspInit(void)
 
   /* Peripheral interrupt init*/
   /* PVD_VDDIO2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(PVD_VDDIO2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(PVD_VDDIO2_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(PVD_VDDIO2_IRQn);
   /* FLASH_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(FLASH_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(FLASH_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(FLASH_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
@@ -124,7 +124,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     __HAL_LINKDMA(huart,hdmatx,hdma_usart2_tx);
 
   /* Peripheral interrupt init*/
-    HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(USART2_IRQn, 3, 0);
     HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspInit 1 */
 

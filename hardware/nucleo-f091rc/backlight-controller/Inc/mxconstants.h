@@ -38,8 +38,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define E0_L4_B_E3_L0_B_Pin GPIO_PIN_13
-#define E0_L4_B_E3_L0_B_GPIO_Port GPIOC
+#define Blue_pushbutton_Pin GPIO_PIN_13
+#define Blue_pushbutton_GPIO_Port GPIOC
 #define E0_L4_R_E3_L0_R_Pin GPIO_PIN_0
 #define E0_L4_R_E3_L0_R_GPIO_Port GPIOC
 #define E0_L3_B_Pin GPIO_PIN_1
@@ -64,6 +64,8 @@
 #define E1_L2_G_GPIO_Port GPIOA
 #define E1_L2_B_Pin GPIO_PIN_7
 #define E1_L2_B_GPIO_Port GPIOA
+#define E0_L4_B_E3_L0_B_Pin GPIO_PIN_4
+#define E0_L4_B_E3_L0_B_GPIO_Port GPIOC
 #define E3_L2_R_E1_L0_R_Pin GPIO_PIN_5
 #define E3_L2_R_E1_L0_R_GPIO_Port GPIOC
 #define E0_L3_G_Pin GPIO_PIN_0

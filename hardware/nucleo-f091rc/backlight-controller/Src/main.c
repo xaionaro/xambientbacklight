@@ -318,9 +318,9 @@ void MX_DMA_Init(void)
   __DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  HAL_NVIC_SetPriority(DMA1_Ch1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Ch1_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(DMA1_Ch1_IRQn);
-  HAL_NVIC_SetPriority(DMA1_Ch2_3_DMA2_Ch1_2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Ch2_3_DMA2_Ch1_2_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(DMA1_Ch2_3_DMA2_Ch1_2_IRQn);
 
 }
@@ -344,31 +344,18 @@ void MX_GPIO_Init(void)
   __GPIOB_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, E0_L4_B_E3_L0_B_Pin|E0_L4_R_E3_L0_R_Pin|E0_L3_B_Pin|E0_L3_R_Pin 
-                          |E0_L4_G_E3_L0_G_Pin|E3_L2_R_E1_L0_R_Pin|E3_L1_B_Pin|E1_L3_B_Pin 
-                          |E3_L1_G_Pin|E3_L1_R_Pin|E0_L0_G_E2_L2_G_Pin|E0_L0_R_E2_L2_R_Pin 
-                          |E0_L0_B_E2_L2_B_Pin, GPIO_PIN_RESET);
+  /*Configure GPIO pin : Blue_pushbutton_Pin */
+  GPIO_InitStruct.Pin = Blue_pushbutton_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Blue_pushbutton_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, E0_L2_G_Pin|E0_L2_R_Pin|E0_L2_B_Pin|E1_L1_R_INT_G_Pin 
-                          |E1_L2_G_Pin|E1_L2_B_Pin|E2_L1_G_Pin|E1_L4_R_E2_L0_R_Pin 
-                          |E1_L1_B_Pin|E1_L1_G_Pin|E0_L1_R_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, E0_L3_G_Pin|E1_L4_B_E2_L0_B_Pin|E1_L4_G_E2_L0_G_Pin|E2_L1_B_Pin 
-                          |E1_L3_G_Pin|E1_L2_R_Pin|E2_L1_R_Pin|E1_L3_R_Pin 
-                          |E0_L1_B_Pin|E3_L2_G_E1_L0_G_Pin|E3_L2_B_E1_L0_B_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(E0_L1_G_GPIO_Port, E0_L1_G_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : E0_L4_B_E3_L0_B_Pin E0_L4_R_E3_L0_R_Pin E0_L3_B_Pin E0_L3_R_Pin 
-                           E0_L4_G_E3_L0_G_Pin E3_L2_R_E1_L0_R_Pin E3_L1_B_Pin E1_L3_B_Pin 
+  /*Configure GPIO pins : E0_L4_R_E3_L0_R_Pin E0_L3_B_Pin E0_L3_R_Pin E0_L4_G_E3_L0_G_Pin 
+                           E0_L4_B_E3_L0_B_Pin E3_L2_R_E1_L0_R_Pin E3_L1_B_Pin E1_L3_B_Pin 
                            E3_L1_G_Pin E3_L1_R_Pin E0_L0_G_E2_L2_G_Pin E0_L0_R_E2_L2_R_Pin 
                            E0_L0_B_E2_L2_B_Pin */
-  GPIO_InitStruct.Pin = E0_L4_B_E3_L0_B_Pin|E0_L4_R_E3_L0_R_Pin|E0_L3_B_Pin|E0_L3_R_Pin 
-                          |E0_L4_G_E3_L0_G_Pin|E3_L2_R_E1_L0_R_Pin|E3_L1_B_Pin|E1_L3_B_Pin 
+  GPIO_InitStruct.Pin = E0_L4_R_E3_L0_R_Pin|E0_L3_B_Pin|E0_L3_R_Pin|E0_L4_G_E3_L0_G_Pin 
+                          |E0_L4_B_E3_L0_B_Pin|E3_L2_R_E1_L0_R_Pin|E3_L1_B_Pin|E1_L3_B_Pin 
                           |E3_L1_G_Pin|E3_L1_R_Pin|E0_L0_G_E2_L2_G_Pin|E0_L0_R_E2_L2_R_Pin 
                           |E0_L0_B_E2_L2_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -404,6 +391,25 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(E0_L1_G_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, E0_L4_R_E3_L0_R_Pin|E0_L3_B_Pin|E0_L3_R_Pin|E0_L4_G_E3_L0_G_Pin 
+                          |E0_L4_B_E3_L0_B_Pin|E3_L2_R_E1_L0_R_Pin|E3_L1_B_Pin|E1_L3_B_Pin 
+                          |E3_L1_G_Pin|E3_L1_R_Pin|E0_L0_G_E2_L2_G_Pin|E0_L0_R_E2_L2_R_Pin 
+                          |E0_L0_B_E2_L2_B_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, E0_L2_G_Pin|E0_L2_R_Pin|E0_L2_B_Pin|E1_L1_R_INT_G_Pin 
+                          |E1_L2_G_Pin|E1_L2_B_Pin|E2_L1_G_Pin|E1_L4_R_E2_L0_R_Pin 
+                          |E1_L1_B_Pin|E1_L1_G_Pin|E0_L1_R_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, E0_L3_G_Pin|E1_L4_B_E2_L0_B_Pin|E1_L4_G_E2_L0_G_Pin|E2_L1_B_Pin 
+                          |E1_L3_G_Pin|E1_L2_R_Pin|E2_L1_R_Pin|E1_L3_R_Pin 
+                          |E0_L1_B_Pin|E3_L2_G_E1_L0_G_Pin|E3_L2_B_E1_L0_B_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(E0_L1_G_GPIO_Port, E0_L1_G_Pin, GPIO_PIN_RESET);
 
 }
 
