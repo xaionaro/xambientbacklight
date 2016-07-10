@@ -36,48 +36,17 @@
 #include "stm32f0xx_it.h"
 
 /* USER CODE BEGIN 0 */
-extern void tick_leds();
 
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern DMA_HandleTypeDef hdma_usart2_tx;
-extern UART_HandleTypeDef huart2;
+extern DMA_HandleTypeDef hdma_adc;
+extern DMA_HandleTypeDef hdma_spi1_tx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 
 /******************************************************************************/
 /*            Cortex-M0 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
-
-/**
-* @brief This function handles Non maskable interrupt.
-*/
-void NMI_Handler(void)
-{
-  /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
-
-  /* USER CODE END NonMaskableInt_IRQn 0 */
-  HAL_RCC_NMI_IRQHandler();
-  /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-
-  /* USER CODE END NonMaskableInt_IRQn 1 */
-}
-
-/**
-* @brief This function handles Hard fault interrupt.
-*/
-void HardFault_IRQHandler(void)
-{
-  /* USER CODE BEGIN HardFault_IRQn 0 */
-
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-  }
-  /* USER CODE BEGIN HardFault_IRQn 1 */
-
-  /* USER CODE END HardFault_IRQn 1 */
-}
 
 /**
 * @brief This function handles System tick timer.
@@ -91,8 +60,6 @@ void SysTick_Handler(void)
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
-  //tick_leds();
-
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -104,74 +71,32 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-* @brief This function handles PVD and VDDIO2 supply comparator interrupts through EXTI lines 16 and 31.
-*/
-void PVD_VDDIO2_IRQHandler(void)
-{
-  /* USER CODE BEGIN PVD_VDDIO2_IRQn 0 */
-
-  /* USER CODE END PVD_VDDIO2_IRQn 0 */
-  HAL_PWR_PVD_IRQHandler();
-  HAL_PWR_Vddio2Monitor_IRQHandler();
-  /* USER CODE BEGIN PVD_VDDIO2_IRQn 1 */
-
-  /* USER CODE END PVD_VDDIO2_IRQn 1 */
-}
-
-/**
-* @brief This function handles Flash global interrupt.
-*/
-void FLASH_IRQHandler(void)
-{
-  /* USER CODE BEGIN FLASH_IRQn 0 */
-
-  /* USER CODE END FLASH_IRQn 0 */
-  HAL_FLASH_IRQHandler();
-  /* USER CODE BEGIN FLASH_IRQn 1 */
-
-  /* USER CODE END FLASH_IRQn 1 */
-}
-
-/**
 * @brief This function handles DMA1 channel 1 interrupt.
 */
-void DMA1_Ch1_IRQHandler(void)
+void DMA1_Channel1_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Ch1_IRQn 0 */
+  /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
 
-  /* USER CODE END DMA1_Ch1_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_rx);
-  /* USER CODE BEGIN DMA1_Ch1_IRQn 1 */
+  /* USER CODE END DMA1_Channel1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc);
+  /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
 
-  /* USER CODE END DMA1_Ch1_IRQn 1 */
+  /* USER CODE END DMA1_Channel1_IRQn 1 */
 }
 
 /**
-* @brief This function handles DMA1 channel 2 to 3 and DMA2 channel 1 to 2 interrupts.
+* @brief This function handles DMA1 channel 2 and 3 interrupts.
 */
-void DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler(void)
+void DMA1_Channel2_3_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Ch2_3_DMA2_Ch1_2_IRQn 0 */
+  /* USER CODE BEGIN DMA1_Channel2_3_IRQn 0 */
 
-  /* USER CODE END DMA1_Ch2_3_DMA2_Ch1_2_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_tx);
-  /* USER CODE BEGIN DMA1_Ch2_3_DMA2_Ch1_2_IRQn 1 */
+  /* USER CODE END DMA1_Channel2_3_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+  HAL_DMA_IRQHandler(&hdma_spi1_tx);
+  /* USER CODE BEGIN DMA1_Channel2_3_IRQn 1 */
 
-  /* USER CODE END DMA1_Ch2_3_DMA2_Ch1_2_IRQn 1 */
-}
-
-/**
-* @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
-*/
-void USART2_IRQHandler(void)
-{
-  /* USER CODE BEGIN USART2_IRQn 0 */
-
-  /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
-  /* USER CODE BEGIN USART2_IRQn 1 */
-
-  /* USER CODE END USART2_IRQn 1 */
+  /* USER CODE END DMA1_Channel2_3_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

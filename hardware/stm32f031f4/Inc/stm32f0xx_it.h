@@ -45,14 +45,9 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
-void NMI_Handler(void);
-void HardFault_IRQHandler(void);
 void SysTick_Handler(void);
-void PVD_VDDIO2_IRQHandler(void);
-void FLASH_IRQHandler(void);
-void DMA1_Ch1_IRQHandler(void);
-void DMA1_Ch2_3_DMA2_Ch1_2_IRQHandler(void);
-void USART2_IRQHandler(void);
+void DMA1_Channel1_IRQHandler(void);
+void DMA1_Channel2_3_IRQHandler(void);
 
 #ifdef __cplusplus
 }
